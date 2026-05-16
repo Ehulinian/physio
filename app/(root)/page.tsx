@@ -18,7 +18,7 @@ export default function Home() {
 						Welcome
 					</h1>
 					<p className="text-xl text-zinc-600 dark:text-zinc-400">
-						Управляйте своїми клієнтами легко та ефективно
+						Manage your clients easily and effectively
 					</p>
 				</div>
 
@@ -35,7 +35,7 @@ export default function Home() {
 				</div>
 
 				<p className="text-sm text-zinc-500 dark:text-zinc-500">
-					Всі ваші клієнти в одному місці
+					All your clients in one place
 				</p>
 			</div>
 		</div>
