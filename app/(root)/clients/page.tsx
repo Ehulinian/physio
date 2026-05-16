@@ -1,12 +1,12 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/supabase/supabase';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
-import { ArrowLeft, User, Calendar, Plus } from 'lucide-react';
+import { Search, X } from 'lucide-react';
+import { Title } from '@/components/shared/title';
 
 function getInitials(firstName: string, lastName: string) {
 	return `${firstName?.[0] ?? ''}${lastName?.[0] ?? ''}`.toUpperCase();
@@ -18,211 +18,313 @@ const statusColors: Record<string, string> = {
 	Completed: 'bg-gray-100 text-gray-500',
 };
 
-export default function ClientPage({
-	params,
-}: {
-	params: Promise<{ id: string }>;
-}) {
-	const { id } = use(params);
+export default function ClientsPage() {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const [client, setClient] = useState<any>(null);
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const [notes, setNotes] = useState<any[]>([]);
-	const [text, setText] = useState('');
+	const [clients, setClients] = useState<any[]>([]);
+	const [search, setSearch] = useState('');
+	const [open, setOpen] = useState(false);
+	const [visible, setVisible] = useState(false);
+	const [loading, setLoading] = useState(false);
+	const [form, setForm] = useState({
+		first_name: '',
+		last_name: '',
+		email: '',
+		age: '',
+		gender: '',
+		main_problem: '',
+		onset: '',
+		started_at: '',
+		status: 'Active',
+	});
+
+	const fetchClients = async () => {
+		const { data } = await supabase
+			.from('clients')
+			.select('*')
+			.order('created_at', { ascending: false });
+		setClients(data || []);
+	};
 
 	useEffect(() => {
-		if (!id) return;
-		const load = async () => {
-			const [{ data: clientData }, { data: notesData }] = await Promise.all([
-				supabase.from('clients').select('*').eq('id', id).single(),
-				supabase
-					.from('notes')
-					.select('*')
-					.eq('client_id', id)
-					.order('created_at', { ascending: false }),
-			]);
-			setClient(clientData);
-			setNotes(notesData || []);
-		};
-		load();
-	}, [id]);
+		// eslint-disable-next-line react-hooks/set-state-in-effect
+		fetchClients();
+	}, []);
 
-	async function addNote() {
-		if (!text.trim()) return;
-		const { error } = await supabase
-			.from('notes')
-			.insert({ client_id: id, text });
-		if (!error) {
-			setText('');
-			const { data } = await supabase
-				.from('notes')
-				.select('*')
-				.eq('client_id', id)
-				.order('created_at', { ascending: false });
-			setNotes(data || []);
-		}
+	function openPanel() {
+		setVisible(true);
+		setTimeout(() => setOpen(true), 10);
 	}
 
-	if (!client)
-		return (
-			<div className="text-base text-muted-foreground p-4">Loading...</div>
-		);
+	function closePanel() {
+		setOpen(false);
+		setTimeout(() => setVisible(false), 300);
+	}
+
+	const filtered = clients.filter(c => {
+		const full =
+			`${c.first_name} ${c.last_name} ${c.email} ${c.main_problem}`.toLowerCase();
+		return full.includes(search.toLowerCase());
+	});
+
+	async function createClient() {
+		if (!form.first_name.trim()) return;
+		setLoading(true);
+		const { error } = await supabase.from('clients').insert({
+			first_name: form.first_name,
+			last_name: form.last_name,
+			email: form.email,
+			age: form.age ? parseInt(form.age) : null,
+			gender: form.gender,
+			status: form.status,
+			main_problem: form.main_problem,
+			onset: form.onset,
+			started_at: form.started_at || new Date().toISOString().split('T')[0],
+		});
+
+		if (!error) {
+			setForm({
+				first_name: '',
+				last_name: '',
+				email: '',
+				age: '',
+				gender: '',
+				main_problem: '',
+				onset: '',
+				started_at: '',
+				status: 'Active',
+			});
+			closePanel();
+			fetchClients();
+		}
+		setLoading(false);
+	}
 
 	return (
-		<div className="space-y-6">
-			{/* Back */}
-			<Link
-				href="/clients"
-				className="flex items-center gap-2 text-base text-muted-foreground hover:text-black transition-colors w-fit"
-			>
-				<ArrowLeft className="w-5 h-5" /> Back to clients
-			</Link>
-
-			{/* Profile header */}
-			<div className="flex items-center gap-5">
-				<div className="w-20 h-20 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-2xl font-semibold flex-shrink-0">
-					{getInitials(client.first_name, client.last_name)}
-				</div>
+		<div>
+			{/* Header */}
+			<div className="flex items-center justify-between mb-1">
 				<div>
-					<div className="flex items-center gap-3 mb-1.5">
-						<h1 className="text-2xl font-bold">
-							{client.first_name} {client.last_name}
-						</h1>
-						<span
-							className={`text-sm font-medium px-3 py-0.5 rounded-full ${statusColors[client.status] ?? statusColors.Active}`}
-						>
-							{client.status}
-						</span>
-					</div>
-					<div className="flex items-center gap-5 text-base text-muted-foreground">
-						{client.gender && (
-							<span className="flex items-center gap-1.5">
-								<User className="w-4 h-4" />
-								{client.gender}
-								{client.age ? `, ${client.age}` : ''}
-							</span>
-						)}
-						{client.started_at && (
-							<span className="flex items-center gap-1.5">
-								<Calendar className="w-4 h-4" />
-								Started{' '}
-								{new Date(client.started_at).toLocaleDateString('en-US', {
-									month: 'long',
-									day: 'numeric',
-									year: 'numeric',
-								})}
-							</span>
-						)}
-					</div>
+					<Title text="Clients" className="font-semibold" size="xl" />
+					<p className="text-sm text-muted-foreground mt-1">
+						Manage all your clients in one place
+					</p>
 				</div>
+				<Button
+					onClick={openPanel}
+					className="bg-violet-600 hover:bg-violet-700 text-white"
+				>
+					+ New client
+				</Button>
 			</div>
 
-			{/* Tabs */}
-			<Tabs defaultValue="overview">
-				<TabsList>
-					<TabsTrigger value="overview" className="text-base">
-						Overview
-					</TabsTrigger>
-					<TabsTrigger value="notes" className="text-base">
-						Notes
-					</TabsTrigger>
-				</TabsList>
+			{/* Search */}
+			<div className="relative my-4">
+				<Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+				<Input
+					placeholder="Search clients..."
+					value={search}
+					onChange={e => setSearch(e.target.value)}
+					className="pl-9"
+				/>
+			</div>
 
-				{/* OVERVIEW */}
-				<TabsContent value="overview">
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-						{/* Problem / Symptoms */}
-						<div className="border rounded-xl p-5 space-y-4">
-							<h3 className="font-semibold text-base">Problem / Symptoms</h3>
-							<div>
-								<p className="text-sm text-muted-foreground">Main issue</p>
-								<p className="text-base mt-1">{client.main_problem || '—'}</p>
+			{/* List */}
+			<div className="space-y-2">
+				{filtered.map(c => (
+					<Link key={c.id} href={`/clients/${c.id}`}>
+						<div className="flex items-center gap-4 px-4 py-3 border rounded-xl hover:bg-gray-50 transition-colors cursor-pointer">
+							<div className="w-10 h-10 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center font-semibold text-sm flex-shrink-0">
+								{getInitials(c.first_name, c.last_name)}
 							</div>
-							<div>
-								<p className="text-sm text-muted-foreground">Onset</p>
-								<p className="text-base mt-1">{client.onset || '—'}</p>
+							<div className="flex-1 min-w-0">
+								<p className="font-medium text-sm">
+									{c.first_name} {c.last_name}
+								</p>
+								<p className="text-xs text-muted-foreground truncate">
+									{c.main_problem || '—'}
+								</p>
 							</div>
-						</div>
-
-						{/* Quick Notes */}
-						<div className="border rounded-xl p-5 space-y-4">
-							<h3 className="font-semibold text-base">Quick Notes</h3>
-
-							<div className="space-y-4 max-h-52 overflow-y-auto">
-								{notes.slice(0, 3).map(n => (
-									<div key={n.id}>
-										<p className="text-sm text-muted-foreground">
-											{new Date(n.created_at).toLocaleDateString('en-US', {
-												month: 'long',
+							<div className="text-xs text-muted-foreground text-right hidden sm:block">
+								<p className="text-gray-400">Started</p>
+								<p>
+									{c.started_at
+										? new Date(c.started_at).toLocaleDateString('en-US', {
+												month: 'short',
 												day: 'numeric',
 												year: 'numeric',
-											})}
-										</p>
-										<p className="text-base mt-0.5">{n.text}</p>
+											})
+										: '—'}
+								</p>
+							</div>
+							<span
+								className={`text-xs font-medium px-3 py-1 rounded-full ${statusColors[c.status] ?? statusColors.Active}`}
+							>
+								{c.status}
+							</span>
+							<span className="text-gray-300">›</span>
+						</div>
+					</Link>
+				))}
+			</div>
+
+			{/* Side Panel */}
+			{visible && (
+				<div
+					className={`fixed inset-0 z-50 flex items-start justify-end transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0'}`}
+					style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
+					onClick={closePanel}
+				>
+					<div
+						className={`bg-white h-full w-full max-w-md shadow-xl flex flex-col transition-transform duration-300 ${open ? 'translate-x-0' : 'translate-x-full'}`}
+						onClick={e => e.stopPropagation()}
+					>
+						{/* Panel header */}
+						<div className="flex items-center gap-3 px-6 py-4 border-b">
+							<button
+								onClick={closePanel}
+								className="text-muted-foreground hover:text-black"
+							>
+								<X className="w-5 h-5" />
+							</button>
+							<h2 className="font-semibold text-base">Add new client</h2>
+						</div>
+
+						<div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+							{/* Basic info */}
+							<div>
+								<p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+									Basic information
+								</p>
+								<div className="grid grid-cols-2 gap-3">
+									<div>
+										<label className="text-xs text-muted-foreground mb-1 block">
+											First name
+										</label>
+										<Input
+											placeholder="Enter first name"
+											value={form.first_name}
+											onChange={e =>
+												setForm(f => ({ ...f, first_name: e.target.value }))
+											}
+										/>
 									</div>
-								))}
-								{notes.length === 0 && (
-									<p className="text-base text-muted-foreground">
-										No notes yet
-									</p>
-								)}
-							</div>
-
-							<div className="flex gap-2 pt-2 border-t">
-								<Input
-									placeholder="Add note..."
-									value={text}
-									onChange={e => setText(e.target.value)}
-									onKeyDown={e => e.key === 'Enter' && addNote()}
-									className="text-base"
-								/>
-								<Button size="sm" onClick={addNote} className="px-3">
-									<Plus className="w-4 h-4" />
-								</Button>
-							</div>
-
-							{notes.length > 3 && (
-								<button className="text-sm text-violet-600 hover:underline">
-									View all notes →
-								</button>
-							)}
-						</div>
-					</div>
-				</TabsContent>
-
-				{/* NOTES */}
-				<TabsContent value="notes">
-					<div className="mt-4 border rounded-xl p-5 space-y-4">
-						<div className="flex gap-2">
-							<Input
-								placeholder="Add a note..."
-								value={text}
-								onChange={e => setText(e.target.value)}
-								onKeyDown={e => e.key === 'Enter' && addNote()}
-								className="text-base"
-							/>
-							<Button onClick={addNote}>Add</Button>
-						</div>
-						<div className="space-y-3">
-							{notes.map(n => (
-								<div key={n.id} className="border rounded-lg p-4">
-									<p className="text-base">{n.text}</p>
-									<p className="text-sm text-muted-foreground mt-1">
-										{new Date(n.created_at).toLocaleDateString('en-US', {
-											month: 'long',
-											day: 'numeric',
-											year: 'numeric',
-										})}
-									</p>
+									<div>
+										<label className="text-xs text-muted-foreground mb-1 block">
+											Last name
+										</label>
+										<Input
+											placeholder="Enter last name"
+											value={form.last_name}
+											onChange={e =>
+												setForm(f => ({ ...f, last_name: e.target.value }))
+											}
+										/>
+									</div>
+									<div>
+										<label className="text-xs text-muted-foreground mb-1 block">
+											Email (optional)
+										</label>
+										<Input
+											placeholder="Enter email"
+											value={form.email}
+											onChange={e =>
+												setForm(f => ({ ...f, email: e.target.value }))
+											}
+										/>
+									</div>
+									<div>
+										<label className="text-xs text-muted-foreground mb-1 block">
+											Age
+										</label>
+										<Input
+											placeholder="Age"
+											type="number"
+											value={form.age}
+											onChange={e =>
+												setForm(f => ({ ...f, age: e.target.value }))
+											}
+										/>
+									</div>
+									<div>
+										<label className="text-xs text-muted-foreground mb-1 block">
+											Gender
+										</label>
+										<select
+											className="w-full border rounded-md px-3 py-2 text-sm bg-white"
+											value={form.gender}
+											onChange={e =>
+												setForm(f => ({ ...f, gender: e.target.value }))
+											}
+										>
+											<option value="">Select gender</option>
+											<option value="Male">Male</option>
+											<option value="Female">Female</option>
+										</select>
+									</div>
+									<div>
+										<label className="text-xs text-muted-foreground mb-1 block">
+											Started
+										</label>
+										<Input
+											type="date"
+											value={form.started_at}
+											onChange={e =>
+												setForm(f => ({ ...f, started_at: e.target.value }))
+											}
+										/>
+									</div>
 								</div>
-							))}
-							{notes.length === 0 && (
-								<p className="text-base text-muted-foreground">No notes yet</p>
-							)}
+							</div>
+
+							{/* Main problem */}
+							<div>
+								<p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+									Main problem
+								</p>
+								<div className="space-y-3">
+									<div>
+										<label className="text-xs text-muted-foreground mb-1 block">
+											What is the main issue?
+										</label>
+										<textarea
+											className="w-full border rounded-md px-3 py-2 text-sm resize-none min-h-[80px]"
+											placeholder="Describe the main problem"
+											value={form.main_problem}
+											onChange={e =>
+												setForm(f => ({ ...f, main_problem: e.target.value }))
+											}
+										/>
+									</div>
+									<div>
+										<label className="text-xs text-muted-foreground mb-1 block">
+											When did it start?
+										</label>
+										<textarea
+											className="w-full border rounded-md px-3 py-2 text-sm resize-none min-h-[80px]"
+											placeholder="How and when did it start?"
+											value={form.onset}
+											onChange={e =>
+												setForm(f => ({ ...f, onset: e.target.value }))
+											}
+										/>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						{/* Footer */}
+						<div className="px-6 py-4 border-t">
+							<Button
+								className="w-full bg-violet-600 hover:bg-violet-700 text-white"
+								onClick={createClient}
+								disabled={loading || !form.first_name.trim()}
+							>
+								{loading ? 'Creating...' : 'Create client'}
+							</Button>
 						</div>
 					</div>
-				</TabsContent>
-			</Tabs>
+				</div>
+			)}
 		</div>
 	);
 }

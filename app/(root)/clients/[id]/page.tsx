@@ -64,47 +64,45 @@ export default function ClientPage({
 	}
 
 	if (!client)
-		return (
-			<div className="text-base text-muted-foreground p-4">Loading...</div>
-		);
+		return <div className="text-sm text-muted-foreground p-4">Loading...</div>;
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-5">
 			{/* Back */}
 			<Link
 				href="/clients"
-				className="flex items-center gap-2 text-base text-muted-foreground hover:text-black transition-colors w-fit"
+				className="flex items-center gap-2 text-sm text-muted-foreground hover:text-black transition-colors w-fit"
 			>
-				<ArrowLeft className="w-5 h-5" /> Back to clients
+				<ArrowLeft className="w-4 h-4" /> Back to clients
 			</Link>
 
 			{/* Profile header */}
-			<div className="flex items-center gap-5">
-				<div className="w-20 h-20 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-2xl font-semibold flex-shrink-0">
+			<div className="flex items-center gap-4">
+				<div className="w-16 h-16 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-xl font-semibold flex-shrink-0">
 					{getInitials(client.first_name, client.last_name)}
 				</div>
 				<div>
-					<div className="flex items-center gap-3 mb-1.5">
-						<h1 className="text-2xl font-bold">
+					<div className="flex items-center gap-2 mb-1">
+						<h1 className="text-xl font-bold">
 							{client.first_name} {client.last_name}
 						</h1>
 						<span
-							className={`text-sm font-medium px-3 py-0.5 rounded-full ${statusColors[client.status] ?? statusColors.Active}`}
+							className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${statusColors[client.status] ?? statusColors.Active}`}
 						>
 							{client.status}
 						</span>
 					</div>
-					<div className="flex items-center gap-5 text-base text-muted-foreground">
+					<div className="flex items-center gap-4 text-sm text-muted-foreground">
 						{client.gender && (
-							<span className="flex items-center gap-1.5">
-								<User className="w-4 h-4" />
+							<span className="flex items-center gap-1">
+								<User className="w-3.5 h-3.5" />
 								{client.gender}
 								{client.age ? `, ${client.age}` : ''}
 							</span>
 						)}
 						{client.started_at && (
-							<span className="flex items-center gap-1.5">
-								<Calendar className="w-4 h-4" />
+							<span className="flex items-center gap-1">
+								<Calendar className="w-3.5 h-3.5" />
 								Started{' '}
 								{new Date(client.started_at).toLocaleDateString('en-US', {
 									month: 'long',
@@ -120,69 +118,74 @@ export default function ClientPage({
 			{/* Tabs */}
 			<Tabs defaultValue="overview">
 				<TabsList>
-					<TabsTrigger value="overview" className="text-base">
-						Overview
-					</TabsTrigger>
-					<TabsTrigger value="notes" className="text-base">
-						Notes
-					</TabsTrigger>
+					<TabsTrigger value="overview">Overview</TabsTrigger>
+					<TabsTrigger value="notes">Notes</TabsTrigger>
 				</TabsList>
 
 				{/* OVERVIEW */}
 				<TabsContent value="overview">
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
 						{/* Problem / Symptoms */}
-						<div className="border rounded-xl p-5 space-y-4">
-							<h3 className="font-semibold text-base">Problem / Symptoms</h3>
+						<div className="border rounded-xl p-4 space-y-3">
+							<h3 className="font-semibold text-sm">Problem / Symptoms</h3>
 							<div>
-								<p className="text-sm text-muted-foreground">Main issue</p>
-								<p className="text-base mt-1">{client.main_problem || '—'}</p>
+								<p className="text-xs text-muted-foreground">Main issue</p>
+								<p className="text-sm mt-0.5">{client.main_problem || '—'}</p>
 							</div>
 							<div>
-								<p className="text-sm text-muted-foreground">Onset</p>
-								<p className="text-base mt-1">{client.onset || '—'}</p>
+								<p className="text-xs text-muted-foreground">Onset</p>
+								<p className="text-sm mt-0.5">{client.onset || '—'}</p>
 							</div>
 						</div>
 
 						{/* Quick Notes */}
-						<div className="border rounded-xl p-5 space-y-4">
-							<h3 className="font-semibold text-base">Quick Notes</h3>
+						<div className="border rounded-xl p-4 space-y-3">
+							<div className="flex items-center justify-between">
+								<h3 className="font-semibold text-sm">Quick Notes</h3>
+							</div>
 
-							<div className="space-y-4 max-h-52 overflow-y-auto">
+							{/* Notes list */}
+							<div className="space-y-3 max-h-48 overflow-y-auto">
 								{notes.slice(0, 3).map(n => (
 									<div key={n.id}>
-										<p className="text-sm text-muted-foreground">
+										<p className="text-xs text-muted-foreground">
 											{new Date(n.created_at).toLocaleDateString('en-US', {
 												month: 'long',
 												day: 'numeric',
 												year: 'numeric',
 											})}
 										</p>
-										<p className="text-base mt-0.5">{n.text}</p>
+										<p className="text-sm mt-0.5">{n.text}</p>
 									</div>
 								))}
 								{notes.length === 0 && (
-									<p className="text-base text-muted-foreground">
-										No notes yet
-									</p>
+									<p className="text-xs text-muted-foreground">No notes yet</p>
 								)}
 							</div>
 
-							<div className="flex gap-2 pt-2 border-t">
+							{/* Add note inline */}
+							<div className="flex gap-2 pt-1 border-t">
 								<Input
 									placeholder="Add note..."
 									value={text}
 									onChange={e => setText(e.target.value)}
 									onKeyDown={e => e.key === 'Enter' && addNote()}
-									className="text-base"
+									className="text-sm h-8"
 								/>
-								<Button size="sm" onClick={addNote} className="px-3">
-									<Plus className="w-4 h-4" />
+								<Button
+									size="sm"
+									onClick={addNote}
+									className="h-8 px-3 bg-violet-600"
+								>
+									<Plus className="w-4 h-4  " />
 								</Button>
 							</div>
 
 							{notes.length > 3 && (
-								<button className="text-sm text-violet-600 hover:underline">
+								<button
+									onClick={() => {}}
+									className="text-xs text-violet-600 hover:underline"
+								>
 									View all notes →
 								</button>
 							)}
@@ -192,22 +195,21 @@ export default function ClientPage({
 
 				{/* NOTES */}
 				<TabsContent value="notes">
-					<div className="mt-4 border rounded-xl p-5 space-y-4">
+					<div className="mt-4 border rounded-xl p-4 space-y-4">
 						<div className="flex gap-2">
 							<Input
 								placeholder="Add a note..."
 								value={text}
 								onChange={e => setText(e.target.value)}
 								onKeyDown={e => e.key === 'Enter' && addNote()}
-								className="text-base"
 							/>
 							<Button onClick={addNote}>Add</Button>
 						</div>
 						<div className="space-y-3">
 							{notes.map(n => (
-								<div key={n.id} className="border rounded-lg p-4">
-									<p className="text-base">{n.text}</p>
-									<p className="text-sm text-muted-foreground mt-1">
+								<div key={n.id} className="border rounded-lg p-3">
+									<p className="text-sm">{n.text}</p>
+									<p className="text-xs text-muted-foreground mt-1">
 										{new Date(n.created_at).toLocaleDateString('en-US', {
 											month: 'long',
 											day: 'numeric',
@@ -217,7 +219,7 @@ export default function ClientPage({
 								</div>
 							))}
 							{notes.length === 0 && (
-								<p className="text-base text-muted-foreground">No notes yet</p>
+								<p className="text-sm text-muted-foreground">No notes yet</p>
 							)}
 						</div>
 					</div>

@@ -21,7 +21,7 @@ export default function AppSidebar() {
 	const pathname = usePathname();
 
 	return (
-		<Sidebar>
+		<Sidebar className="bg-violet-600">
 			<SidebarHeader className="p-4 font-semibold">PysioFlow</SidebarHeader>
 
 			<SidebarContent>
