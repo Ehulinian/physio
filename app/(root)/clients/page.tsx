@@ -104,16 +104,16 @@ export default function ClientsPage() {
 			{/* Header */}
 			<div className="flex items-center justify-between mb-1">
 				<div>
-					<Title text="Clients" className="font-semibold" size="xl" />
+					<Title text="Клієнти" className="font-semibold" size="xl" />
 					<p className="text-sm text-muted-foreground mt-1">
-						Manage all your clients in one place
+						Керуйте всіма своїми клієнтами в одному місці
 					</p>
 				</div>
 				<Button
 					onClick={openPanel}
 					className="bg-violet-600 hover:bg-violet-700 text-white"
 				>
-					+ New client
+					+ Новий клієнт
 				</Button>
 			</div>
 
