@@ -34,7 +34,7 @@ export default function ClientsPage() {
 		main_problem: '',
 		onset: '',
 		started_at: '',
-		status: 'Active',
+		status: 'Активний',
 	});
 
 	const fetchClients = async () => {
@@ -91,7 +91,7 @@ export default function ClientsPage() {
 				main_problem: '',
 				onset: '',
 				started_at: '',
-				status: 'Active',
+				status: 'Активний',
 			});
 			closePanel();
 			fetchClients();
@@ -121,7 +121,7 @@ export default function ClientsPage() {
 			<div className="relative my-4">
 				<Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
 				<Input
-					placeholder="Search clients..."
+					placeholder="Пошук клієнтів..."
 					value={search}
 					onChange={e => setSearch(e.target.value)}
 					className="pl-9"
@@ -186,7 +186,7 @@ export default function ClientsPage() {
 							>
 								<X className="w-5 h-5" />
 							</button>
-							<h2 className="font-semibold text-base">Add new client</h2>
+							<h2 className="font-semibold text-base">Додати нового клієнта</h2>
 						</div>
 
 						<div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
@@ -210,7 +210,7 @@ export default function ClientsPage() {
 									</div>
 									<div>
 										<label className="text-xs text-muted-foreground mb-1 block">
-											Last name
+											Прізвище
 										</label>
 										<Input
 											placeholder="Enter last name"
@@ -234,7 +234,7 @@ export default function ClientsPage() {
 									</div>
 									<div>
 										<label className="text-xs text-muted-foreground mb-1 block">
-											Age
+											Вік
 										</label>
 										<Input
 											placeholder="Age"
@@ -247,7 +247,7 @@ export default function ClientsPage() {
 									</div>
 									<div>
 										<label className="text-xs text-muted-foreground mb-1 block">
-											Gender
+											Стать
 										</label>
 										<select
 											className="w-full border rounded-md px-3 py-2 text-sm bg-white"
@@ -256,14 +256,14 @@ export default function ClientsPage() {
 												setForm(f => ({ ...f, gender: e.target.value }))
 											}
 										>
-											<option value="">Select gender</option>
-											<option value="Male">Male</option>
-											<option value="Female">Female</option>
+											<option value="">Оберіть стать</option>
+											<option value="Чоловік">Чоловік</option>
+											<option value="Жінка">Жінка</option>
 										</select>
 									</div>
 									<div>
 										<label className="text-xs text-muted-foreground mb-1 block">
-											Started
+											Стартує
 										</label>
 										<Input
 											type="date"
@@ -279,12 +279,12 @@ export default function ClientsPage() {
 							{/* Main problem */}
 							<div>
 								<p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-									Main problem
+									Основна проблема
 								</p>
 								<div className="space-y-3">
 									<div>
 										<label className="text-xs text-muted-foreground mb-1 block">
-											What is the main issue?
+											У чому головна проблема?
 										</label>
 										<textarea
 											className="w-full border rounded-md px-3 py-2 text-sm resize-none min-h-[80px]"
@@ -297,7 +297,7 @@ export default function ClientsPage() {
 									</div>
 									<div>
 										<label className="text-xs text-muted-foreground mb-1 block">
-											When did it start?
+											Коли це почалося?
 										</label>
 										<textarea
 											className="w-full border rounded-md px-3 py-2 text-sm resize-none min-h-[80px]"

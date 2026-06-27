@@ -1,0 +1,212 @@
+'use client';
+
+import { use, useCallback, useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { ArrowLeft, CheckCircle, Save } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { SymptomsChecklist } from '@/components/assessment/SymptomsChecklist';
+import { PainAssessmentBlock } from '@/components/assessment/PainAssessmentBlock';
+import { FunctionalLimitationsBlock } from '@/components/assessment/FunctionalLimitationsBlock';
+import { NotesEditor } from '@/components/assessment/NotesEditor';
+import { getAssessment, saveAssessment } from '@/supabase/assessments';
+import {
+	DEFAULT_PROTOCOL,
+	type AssessmentProtocol,
+	type AssessmentStatus,
+} from '@/lib/assessment-types';
+
+export default function AssessmentPage({
+	params,
+}: {
+	params: Promise<{ id: string; assessmentId: string }>;
+}) {
+	const { id: clientId, assessmentId } = use(params);
+	const router = useRouter();
+
+	const [protocol, setProtocol] =
+		useState<AssessmentProtocol>(DEFAULT_PROTOCOL);
+	const [status, setStatus] = useState<AssessmentStatus>('чернетка');
+	const [loaded, setLoaded] = useState(false);
+	const [saving, setSaving] = useState(false);
+	const [savedAt, setSavedAt] = useState<Date | null>(null);
+	const [completing, setCompleting] = useState(false);
+	const autosaveTimer = useRef<ReturnType<typeof setTimeout>>(null);
+
+	useEffect(() => {
+		getAssessment(assessmentId).then(a => {
+			if (a) {
+				setProtocol(a.protocol);
+				setStatus(a.status);
+			}
+			setLoaded(true);
+		});
+	}, [assessmentId]);
+
+	const persist = useCallback(
+		async (proto: AssessmentProtocol, s: AssessmentStatus) => {
+			await saveAssessment(assessmentId, proto, s);
+		},
+		[assessmentId],
+	);
+
+	function updateProtocol(patch: Partial<AssessmentProtocol>) {
+		if (status === 'виконано') return;
+		const next = { ...protocol, ...patch };
+		setProtocol(next);
+
+		if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
+		autosaveTimer.current = setTimeout(() => {
+			persist(next, 'чернетка').then(() => setSavedAt(new Date()));
+		}, 1500);
+	}
+
+	async function handleSaveDraft() {
+		setSaving(true);
+		await persist(protocol, 'чернетка');
+		setSaving(false);
+		setSavedAt(new Date());
+	}
+
+	async function handleComplete() {
+		setCompleting(true);
+		await persist(protocol, 'виконано');
+		setStatus('виконано');
+		setCompleting(false);
+		router.push(`/clients/${clientId}`);
+	}
+
+	if (!loaded) {
+		return (
+			<div className="text-sm text-muted-foreground p-4">Завантаження...</div>
+		);
+	}
+
+	const isCompleted = status === 'виконано';
+
+	return (
+		<div className="max-w-2xl mx-auto space-y-6 pb-10">
+			{/* Header */}
+			<div className="flex items-center justify-between gap-3 flex-wrap">
+				<Link
+					href={`/clients/${clientId}`}
+					className="flex items-center gap-2 text-sm text-muted-foreground hover:text-black transition-colors"
+				>
+					<ArrowLeft className="w-4 h-4" />
+					Повернутися до клієнта
+				</Link>
+
+				<div className="flex items-center gap-2">
+					{isCompleted ? (
+						<span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-green-100 text-green-700">
+							Виконано
+						</span>
+					) : (
+						<>
+							{savedAt && (
+								<span className="text-xs text-green-600">
+									Збережено{' '}
+									{savedAt.toLocaleTimeString([], {
+										hour: '2-digit',
+										minute: '2-digit',
+									})}
+								</span>
+							)}
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={handleSaveDraft}
+								disabled={saving}
+							>
+								<Save className="w-4 h-4 mr-1.5" />
+								{saving ? 'Збереження...' : 'Зберегти чернетку'}
+							</Button>
+							<Button
+								size="sm"
+								onClick={handleComplete}
+								disabled={completing}
+								className="bg-violet-600 hover:bg-violet-700 text-white"
+							>
+								<CheckCircle className="w-4 h-4 mr-1.5" />
+								{completing ? 'Збереження...' : 'Виконано'}
+							</Button>
+						</>
+					)}
+				</div>
+			</div>
+
+			<div>
+				<h1 className="text-xl font-semibold">Оцінка</h1>
+				{isCompleted && (
+					<p className="text-sm text-muted-foreground mt-0.5">
+						Це оцінювання завершене та доступне лише для читання
+					</p>
+				)}
+			</div>
+
+			{/* Symptoms */}
+			<section className="border rounded-xl p-5 space-y-3">
+				<div>
+					<h2 className="font-semibold text-sm">Симптоми</h2>
+					<p className="text-xs text-muted-foreground">
+						Виберіть усе, що підходить
+					</p>
+				</div>
+				<SymptomsChecklist
+					selected={protocol.symptoms}
+					onChange={
+						isCompleted ? () => {} : symptoms => updateProtocol({ symptoms })
+					}
+				/>
+			</section>
+
+			{/* Pain */}
+			<section className="border rounded-xl p-5 space-y-3">
+				<div>
+					<h2 className="font-semibold text-sm">Оцінка болю</h2>
+					<p className="text-xs text-muted-foreground">
+						Інтенсивність, місця та тип
+					</p>
+				</div>
+				<PainAssessmentBlock
+					data={protocol.pain}
+					onChange={isCompleted ? () => {} : pain => updateProtocol({ pain })}
+				/>
+			</section>
+
+			{/* Functional Limitations */}
+			<section className="border rounded-xl p-5 space-y-3">
+				<div>
+					<h2 className="font-semibold text-sm">Функціональні обмеження</h2>
+					<p className="text-xs text-muted-foreground">
+						Діяльність, на яку впливає стан
+					</p>
+				</div>
+				<FunctionalLimitationsBlock
+					selected={protocol.functional_limitations}
+					onChange={
+						isCompleted
+							? () => {}
+							: functional_limitations =>
+									updateProtocol({ functional_limitations })
+					}
+				/>
+			</section>
+
+			{/* Notes */}
+			<section className="border rounded-xl p-5 space-y-3">
+				<div>
+					<h2 className="font-semibold text-sm">Додаткові примітки</h2>
+					<p className="text-xs text-muted-foreground">
+						Опис пацієнта та клінічні спостереження
+					</p>
+				</div>
+				<NotesEditor
+					notes={protocol.notes}
+					readOnly={isCompleted}
+					onChange={isCompleted ? () => {} : notes => updateProtocol({ notes })}
+				/>
+			</section>
+		</div>
+	);
+}

@@ -26,7 +26,7 @@ export default function AppSidebar() {
 
 			<SidebarContent>
 				<SidebarGroup>
-					<SidebarGroupLabel>Main</SidebarGroupLabel>
+					<SidebarGroupLabel>Основна</SidebarGroupLabel>
 
 					<SidebarGroupContent>
 						<SidebarMenu>
@@ -38,7 +38,7 @@ export default function AppSidebar() {
 								>
 									<Link href="/clients" className="flex items-center gap-2">
 										<Users size={18} />
-										Clients
+										Клієнти
 									</Link>
 								</SidebarMenuButton>
 							</SidebarMenuItem>

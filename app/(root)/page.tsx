@@ -8,17 +8,16 @@ export default function Home() {
 	return (
 		<div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center p-6">
 			<div className="max-w-md w-full text-center space-y-10">
-				{/* Лого / Іконка */}
 				<div className="mx-auto w-20 h-20 bg-violet-600 rounded-2xl flex items-center justify-center">
 					<Users className="w-10 h-10 text-white" />
 				</div>
 
 				<div className="space-y-4">
 					<h1 className="text-5xl font-semibold tracking-tight text-zinc-900 dark:text-white">
-						Welcome
+						Ласкаво просимо
 					</h1>
 					<p className="text-xl text-zinc-600 dark:text-zinc-400">
-						Manage your clients easily and effectively
+						Керуйте своїми клієнтами легко та ефективно
 					</p>
 				</div>
 
@@ -35,7 +34,7 @@ export default function Home() {
 				</div>
 
 				<p className="text-sm text-zinc-500 dark:text-zinc-500">
-					All your clients in one place
+					Усі ваші клієнти в одному місці
 				</p>
 			</div>
 		</div>
