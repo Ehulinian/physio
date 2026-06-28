@@ -9,20 +9,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
 import { ArrowLeft, Calendar, ClipboardList, Plus, User } from 'lucide-react';
 import type { PhysioAssessment } from '@/lib/assessment-types';
+import { ASSESSMENT_STATUS_COLORS } from '@/lib/assessment-types';
+import { useLocale } from '@/lib/i18n';
 
 function getInitials(firstName: string, lastName: string) {
 	return `${firstName?.[0] ?? ''}${lastName?.[0] ?? ''}`.toUpperCase();
 }
 
-const statusColors: Record<string, string> = {
+const clientStatusColors: Record<string, string> = {
 	Active: 'bg-green-100 text-green-700',
 	Paused: 'bg-yellow-100 text-yellow-700',
 	Completed: 'bg-gray-100 text-gray-500',
-};
-
-const assessmentStatusColors: Record<string, string> = {
-	draft: 'bg-yellow-100 text-yellow-700',
-	completed: 'bg-green-100 text-green-700',
 };
 
 export default function ClientPage({
@@ -31,6 +28,9 @@ export default function ClientPage({
 	params: Promise<{ id: string }>;
 }) {
 	const { id } = use(params);
+	const { t, locale } = useLocale();
+	const dateLocale = locale === 'uk' ? 'uk-UA' : 'en-US';
+
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const [client, setClient] = useState<any>(null);
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -75,8 +75,26 @@ export default function ClientPage({
 
 	if (!client)
 		return (
-			<div className="text-sm text-muted-foreground p-4">Завантаження...</div>
+			<div className="text-sm text-muted-foreground p-4">{t.common.loading}</div>
 		);
+
+	const cl = t.clients;
+	const ov = t.clients.overview;
+	const al = t.clients.assessmentList;
+
+	function assessmentCount(n: number) {
+		if (locale === 'uk') {
+			return `${n} оцінк${n === 1 ? 'а' : n < 5 ? 'и' : 'ок'}`;
+		}
+		return `${n} assessment${n === 1 ? '' : 's'}`;
+	}
+
+	function symptomCount(n: number) {
+		if (locale === 'uk') {
+			return `${n} симптом${n === 1 ? '' : n < 5 ? 'и' : 'ів'}`;
+		}
+		return `${n} symptom${n === 1 ? '' : 's'}`;
+	}
 
 	return (
 		<div className="space-y-5">
@@ -85,7 +103,7 @@ export default function ClientPage({
 				href="/clients"
 				className="flex items-center gap-2 text-sm text-muted-foreground hover:text-black transition-colors w-fit"
 			>
-				<ArrowLeft className="w-4 h-4" /> Повернутись до клієнтів
+				<ArrowLeft className="w-4 h-4" /> {cl.backToClients}
 			</Link>
 
 			{/* Profile header */}
@@ -99,9 +117,9 @@ export default function ClientPage({
 							{client.first_name} {client.last_name}
 						</h1>
 						<span
-							className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${statusColors[client.status] ?? statusColors.Active}`}
+							className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${clientStatusColors[client.status] ?? clientStatusColors.Active}`}
 						>
-							{client.status}
+							{cl.status[client.status] ?? client.status}
 						</span>
 					</div>
 					<div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -115,8 +133,8 @@ export default function ClientPage({
 						{client.started_at && (
 							<span className="flex items-center gap-1">
 								<Calendar className="w-3.5 h-3.5" />
-								Started{' '}
-								{new Date(client.started_at).toLocaleDateString('en-US', {
+								{cl.startedAt}{' '}
+								{new Date(client.started_at).toLocaleDateString(dateLocale, {
 									month: 'long',
 									day: 'numeric',
 									year: 'numeric',
@@ -130,16 +148,16 @@ export default function ClientPage({
 			{/* Tabs */}
 			<Tabs defaultValue="overview">
 				<TabsList>
-					<TabsTrigger value="overview">Загальний огляд</TabsTrigger>
+					<TabsTrigger value="overview">{cl.tabs.overview}</TabsTrigger>
 					<TabsTrigger value="assessments">
-						Оцінки
+						{cl.tabs.assessments}
 						{assessments.length > 0 && (
 							<span className="ml-1.5 text-xs bg-violet-100 text-violet-700 rounded-full px-1.5 py-0.5 font-medium">
 								{assessments.length}
 							</span>
 						)}
 					</TabsTrigger>
-					<TabsTrigger value="notes">Нотатки</TabsTrigger>
+					<TabsTrigger value="notes">{cl.tabs.notes}</TabsTrigger>
 				</TabsList>
 
 				{/* OVERVIEW */}
@@ -147,13 +165,13 @@ export default function ClientPage({
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
 						{/* Problem / Symptoms */}
 						<div className="border rounded-xl p-4 space-y-3">
-							<h3 className="font-semibold text-sm">Проблеми / Симптоми</h3>
+							<h3 className="font-semibold text-sm">{ov.problemsTitle}</h3>
 							<div>
-								<p className="text-xs text-muted-foreground">Головне питання</p>
+								<p className="text-xs text-muted-foreground">{ov.mainProblemLabel}</p>
 								<p className="text-sm mt-0.5">{client.main_problem || '—'}</p>
 							</div>
 							<div>
-								<p className="text-xs text-muted-foreground">Початок</p>
+								<p className="text-xs text-muted-foreground">{ov.onsetLabel}</p>
 								<p className="text-sm mt-0.5">{client.onset || '—'}</p>
 							</div>
 						</div>
@@ -161,14 +179,14 @@ export default function ClientPage({
 						{/* Quick Notes */}
 						<div className="border rounded-xl p-4 space-y-3">
 							<div className="flex items-center justify-between">
-								<h3 className="font-semibold text-sm">Швидкі нотатки</h3>
+								<h3 className="font-semibold text-sm">{ov.quickNotes}</h3>
 							</div>
 
 							<div className="space-y-3 max-h-48 overflow-y-auto">
 								{notes.slice(0, 3).map(n => (
 									<div key={n.id}>
 										<p className="text-xs text-muted-foreground">
-											{new Date(n.created_at).toLocaleDateString('en-US', {
+											{new Date(n.created_at).toLocaleDateString(dateLocale, {
 												month: 'long',
 												day: 'numeric',
 												year: 'numeric',
@@ -178,15 +196,13 @@ export default function ClientPage({
 									</div>
 								))}
 								{notes.length === 0 && (
-									<p className="text-xs text-muted-foreground">
-										Приміток ще немає
-									</p>
+									<p className="text-xs text-muted-foreground">{ov.noNotes}</p>
 								)}
 							</div>
 
 							<div className="flex gap-2 pt-1 border-t">
 								<Input
-									placeholder="Додати примітку..."
+									placeholder={ov.notePlaceholder}
 									value={text}
 									onChange={e => setText(e.target.value)}
 									onKeyDown={e => e.key === 'Enter' && addNote()}
@@ -206,7 +222,7 @@ export default function ClientPage({
 									onClick={() => {}}
 									className="text-xs text-violet-600 hover:underline"
 								>
-									Переглянути всі нотатки →
+									{ov.viewAllNotes}
 								</button>
 							)}
 						</div>
@@ -219,8 +235,8 @@ export default function ClientPage({
 						<div className="flex items-center justify-between">
 							<p className="text-sm text-muted-foreground">
 								{assessments.length === 0
-									? 'No assessments yet'
-									: `${assessments.length} assessment${assessments.length > 1 ? 's' : ''}`}
+									? al.noCount
+									: assessmentCount(assessments.length)}
 							</p>
 							<Link href={`/clients/${id}/assessment/new`}>
 								<Button
@@ -228,7 +244,7 @@ export default function ClientPage({
 									className="bg-violet-600 hover:bg-violet-700 text-white"
 								>
 									<Plus className="w-4 h-4 mr-1.5" />
-									Нова оцінка
+									{al.newAssessment}
 								</Button>
 							</Link>
 						</div>
@@ -238,11 +254,10 @@ export default function ClientPage({
 								<ClipboardList className="w-8 h-8 text-gray-300 mx-auto" />
 								<div>
 									<p className="text-sm font-medium text-gray-600">
-										Оцінок ще немає
+										{al.noCount}
 									</p>
 									<p className="text-xs text-muted-foreground mt-1">
-										Розпочніть структуровану фізіооцінку для відстеження
-										симптомів та болю
+										{al.emptyDescription}
 									</p>
 								</div>
 								<Link href={`/clients/${id}/assessment/new`}>
@@ -250,7 +265,7 @@ export default function ClientPage({
 										size="sm"
 										className="bg-violet-600 hover:bg-violet-700 text-white mt-2"
 									>
-										Почати перше оцінювання
+										{al.startFirst}
 									</Button>
 								</Link>
 							</div>
@@ -262,7 +277,7 @@ export default function ClientPage({
 											<ClipboardList className="w-5 h-5 text-violet-400 shrink-0" />
 											<div className="flex-1 min-w-0">
 												<p className="text-sm font-medium">
-													{new Date(a.created_at).toLocaleDateString('en-US', {
+													{new Date(a.created_at).toLocaleDateString(dateLocale, {
 														month: 'long',
 														day: 'numeric',
 														year: 'numeric',
@@ -270,17 +285,17 @@ export default function ClientPage({
 												</p>
 												<p className="text-xs text-muted-foreground">
 													{a.protocol.symptoms.length > 0
-														? `${a.protocol.symptoms.length} symptom${a.protocol.symptoms.length > 1 ? 's' : ''}`
-														: 'No symptoms recorded'}
+														? symptomCount(a.protocol.symptoms.length)
+														: al.noSymptoms}
 													{a.protocol.pain.present
-														? ` · Pain ${a.protocol.pain.intensity}/10`
+														? ` · ${al.pain} ${a.protocol.pain.intensity}/10`
 														: ''}
 												</p>
 											</div>
 											<span
-												className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${assessmentStatusColors[a.status]}`}
+												className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${ASSESSMENT_STATUS_COLORS[a.status]}`}
 											>
-												{a.status}
+												{t.assessment.statusLabels[a.status] ?? a.status}
 											</span>
 											<span className="text-gray-300">›</span>
 										</div>
@@ -296,7 +311,7 @@ export default function ClientPage({
 					<div className="mt-4 border rounded-xl p-4 space-y-4">
 						<div className="flex gap-2">
 							<Input
-								placeholder="Add a note..."
+								placeholder={cl.notes.placeholder}
 								value={text}
 								onChange={e => setText(e.target.value)}
 								onKeyDown={e => e.key === 'Enter' && addNote()}
@@ -305,7 +320,7 @@ export default function ClientPage({
 								className="bg-violet-600 hover:bg-violet-700"
 								onClick={addNote}
 							>
-								Додати
+								{cl.notes.add}
 							</Button>
 						</div>
 						<div className="space-y-3">
@@ -313,7 +328,7 @@ export default function ClientPage({
 								<div key={n.id} className="border rounded-lg p-3">
 									<p className="text-sm">{n.text}</p>
 									<p className="text-xs text-muted-foreground mt-1">
-										{new Date(n.created_at).toLocaleDateString('en-US', {
+										{new Date(n.created_at).toLocaleDateString(dateLocale, {
 											month: 'long',
 											day: 'numeric',
 											year: 'numeric',
@@ -322,9 +337,7 @@ export default function ClientPage({
 								</div>
 							))}
 							{notes.length === 0 && (
-								<p className="text-sm text-muted-foreground">
-									Приміток ще немає
-								</p>
+								<p className="text-sm text-muted-foreground">{cl.notes.noNotes}</p>
 							)}
 						</div>
 					</div>

@@ -11,10 +11,12 @@ import { FunctionalLimitationsBlock } from '@/components/assessment/FunctionalLi
 import { NotesEditor } from '@/components/assessment/NotesEditor';
 import { getAssessment, saveAssessment } from '@/supabase/assessments';
 import {
+	ASSESSMENT_STATUS_COLORS,
 	DEFAULT_PROTOCOL,
 	type AssessmentProtocol,
 	type AssessmentStatus,
 } from '@/lib/assessment-types';
+import { useLocale } from '@/lib/i18n';
 
 export default function AssessmentPage({
 	params,
@@ -23,6 +25,8 @@ export default function AssessmentPage({
 }) {
 	const { id: clientId, assessmentId } = use(params);
 	const router = useRouter();
+	const { t } = useLocale();
+	const a = t.assessment;
 
 	const [protocol, setProtocol] =
 		useState<AssessmentProtocol>(DEFAULT_PROTOCOL);
@@ -34,10 +38,10 @@ export default function AssessmentPage({
 	const autosaveTimer = useRef<ReturnType<typeof setTimeout>>(null);
 
 	useEffect(() => {
-		getAssessment(assessmentId).then(a => {
-			if (a) {
-				setProtocol(a.protocol);
-				setStatus(a.status);
+		getAssessment(assessmentId).then(data => {
+			if (data) {
+				setProtocol(data.protocol);
+				setStatus(data.status);
 			}
 			setLoaded(true);
 		});
@@ -78,11 +82,12 @@ export default function AssessmentPage({
 
 	if (!loaded) {
 		return (
-			<div className="text-sm text-muted-foreground p-4">Завантаження...</div>
+			<div className="text-sm text-muted-foreground p-4">{t.common.loading}</div>
 		);
 	}
 
 	const isCompleted = status === 'виконано';
+	const s = a.sections;
 
 	return (
 		<div className="max-w-2xl mx-auto space-y-6 pb-10">
@@ -93,19 +98,19 @@ export default function AssessmentPage({
 					className="flex items-center gap-2 text-sm text-muted-foreground hover:text-black transition-colors"
 				>
 					<ArrowLeft className="w-4 h-4" />
-					Повернутися до клієнта
+					{t.clients.backToClient}
 				</Link>
 
 				<div className="flex items-center gap-2">
 					{isCompleted ? (
-						<span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-green-100 text-green-700">
-							Виконано
+						<span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${ASSESSMENT_STATUS_COLORS['виконано']}`}>
+							{a.statusLabels['виконано']}
 						</span>
 					) : (
 						<>
 							{savedAt && (
 								<span className="text-xs text-green-600">
-									Збережено{' '}
+									{t.common.saved}{' '}
 									{savedAt.toLocaleTimeString([], {
 										hour: '2-digit',
 										minute: '2-digit',
@@ -119,7 +124,7 @@ export default function AssessmentPage({
 								disabled={saving}
 							>
 								<Save className="w-4 h-4 mr-1.5" />
-								{saving ? 'Збереження...' : 'Зберегти чернетку'}
+								{saving ? t.common.saving : a.saveDraft}
 							</Button>
 							<Button
 								size="sm"
@@ -128,7 +133,7 @@ export default function AssessmentPage({
 								className="bg-violet-600 hover:bg-violet-700 text-white"
 							>
 								<CheckCircle className="w-4 h-4 mr-1.5" />
-								{completing ? 'Збереження...' : 'Виконано'}
+								{completing ? t.common.saving : a.complete}
 							</Button>
 						</>
 					)}
@@ -136,10 +141,10 @@ export default function AssessmentPage({
 			</div>
 
 			<div>
-				<h1 className="text-xl font-semibold">Оцінка</h1>
+				<h1 className="text-xl font-semibold">{a.title}</h1>
 				{isCompleted && (
 					<p className="text-sm text-muted-foreground mt-0.5">
-						Це оцінювання завершене та доступне лише для читання
+						{a.readOnly}
 					</p>
 				)}
 			</div>
@@ -147,10 +152,8 @@ export default function AssessmentPage({
 			{/* Symptoms */}
 			<section className="border rounded-xl p-5 space-y-3">
 				<div>
-					<h2 className="font-semibold text-sm">Симптоми</h2>
-					<p className="text-xs text-muted-foreground">
-						Виберіть усе, що підходить
-					</p>
+					<h2 className="font-semibold text-sm">{s.symptoms.title}</h2>
+					<p className="text-xs text-muted-foreground">{s.symptoms.subtitle}</p>
 				</div>
 				<SymptomsChecklist
 					selected={protocol.symptoms}
@@ -163,10 +166,8 @@ export default function AssessmentPage({
 			{/* Pain */}
 			<section className="border rounded-xl p-5 space-y-3">
 				<div>
-					<h2 className="font-semibold text-sm">Оцінка болю</h2>
-					<p className="text-xs text-muted-foreground">
-						Інтенсивність, місця та тип
-					</p>
+					<h2 className="font-semibold text-sm">{s.pain.title}</h2>
+					<p className="text-xs text-muted-foreground">{s.pain.subtitle}</p>
 				</div>
 				<PainAssessmentBlock
 					data={protocol.pain}
@@ -177,10 +178,8 @@ export default function AssessmentPage({
 			{/* Functional Limitations */}
 			<section className="border rounded-xl p-5 space-y-3">
 				<div>
-					<h2 className="font-semibold text-sm">Функціональні обмеження</h2>
-					<p className="text-xs text-muted-foreground">
-						Діяльність, на яку впливає стан
-					</p>
+					<h2 className="font-semibold text-sm">{s.functional.title}</h2>
+					<p className="text-xs text-muted-foreground">{s.functional.subtitle}</p>
 				</div>
 				<FunctionalLimitationsBlock
 					selected={protocol.functional_limitations}
@@ -196,10 +195,8 @@ export default function AssessmentPage({
 			{/* Notes */}
 			<section className="border rounded-xl p-5 space-y-3">
 				<div>
-					<h2 className="font-semibold text-sm">Додаткові примітки</h2>
-					<p className="text-xs text-muted-foreground">
-						Опис пацієнта та клінічні спостереження
-					</p>
+					<h2 className="font-semibold text-sm">{s.notes.title}</h2>
+					<p className="text-xs text-muted-foreground">{s.notes.subtitle}</p>
 				</div>
 				<NotesEditor
 					notes={protocol.notes}

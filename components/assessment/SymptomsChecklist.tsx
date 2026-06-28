@@ -1,4 +1,7 @@
+'use client';
+
 import { SYMPTOMS, type SymptomId } from '@/lib/assessment-types';
+import { useLocale } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -7,6 +10,8 @@ interface Props {
 }
 
 export function SymptomsChecklist({ selected, onChange }: Props) {
+	const { t } = useLocale();
+
 	function toggle(id: SymptomId) {
 		onChange(
 			selected.includes(id)
@@ -17,7 +22,7 @@ export function SymptomsChecklist({ selected, onChange }: Props) {
 
 	return (
 		<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-			{SYMPTOMS.map(({ id, label }) => {
+			{SYMPTOMS.map(({ id }) => {
 				const checked = selected.includes(id);
 				return (
 					<button
@@ -33,7 +38,7 @@ export function SymptomsChecklist({ selected, onChange }: Props) {
 					>
 						<span
 							className={cn(
-								'w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center transition-colors',
+								'w-4 h-4 rounded border shrink-0 flex items-center justify-center transition-colors',
 								checked ? 'bg-violet-600 border-violet-600' : 'border-gray-300',
 							)}
 						>
@@ -53,7 +58,7 @@ export function SymptomsChecklist({ selected, onChange }: Props) {
 								</svg>
 							)}
 						</span>
-						{label}
+						{t.symptoms[id]}
 					</button>
 				);
 			})}

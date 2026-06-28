@@ -1,4 +1,5 @@
 import { Inter } from 'next/font/google';
+import { Providers } from './providers';
 
 import './globals.css';
 
@@ -14,12 +15,12 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en">
+		<html lang="uk">
 			<head>
 				<link data-rh="true" rel="icon" href="/logo.png" />
 			</head>
 			<body className={inter.className}>
-				<div>{children}</div>
+				<Providers>{children}</Providers>
 			</body>
 		</html>
 	);

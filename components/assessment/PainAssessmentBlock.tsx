@@ -1,3 +1,5 @@
+'use client';
+
 import {
 	PAIN_LOCATIONS,
 	PAIN_TYPES,
@@ -5,6 +7,7 @@ import {
 	type PainLocationId,
 	type PainTypeId,
 } from '@/lib/assessment-types';
+import { useLocale } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -19,6 +22,9 @@ function intensityColor(v: number) {
 }
 
 export function PainAssessmentBlock({ data, onChange }: Props) {
+	const { t } = useLocale();
+	const s = t.assessment.sections.pain;
+
 	function toggleLocation(id: PainLocationId) {
 		const locations = data.locations.includes(id)
 			? data.locations.filter(l => l !== id)
@@ -41,7 +47,7 @@ export function PainAssessmentBlock({ data, onChange }: Props) {
 					type="button"
 					onClick={() => onChange({ ...data, present: !data.present })}
 					className={cn(
-						'relative w-11 h-6 rounded-full transition-colors flex-shrink-0',
+						'relative w-11 h-6 rounded-full transition-colors shrink-0',
 						data.present ? 'bg-violet-600' : 'bg-gray-200',
 					)}
 				>
@@ -53,7 +59,7 @@ export function PainAssessmentBlock({ data, onChange }: Props) {
 					/>
 				</button>
 				<span className="text-sm font-medium">
-					{data.present ? 'Біль присутній' : 'Немає повідомлень про біль'}
+					{data.present ? s.present : s.notPresent}
 				</span>
 			</div>
 
@@ -63,7 +69,7 @@ export function PainAssessmentBlock({ data, onChange }: Props) {
 					<div className="space-y-2">
 						<div className="flex items-center justify-between">
 							<p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-								Інтенсивність болю
+								{s.intensity}
 							</p>
 							<span
 								className={cn(
@@ -87,19 +93,19 @@ export function PainAssessmentBlock({ data, onChange }: Props) {
 							className="w-full h-2 rounded-full appearance-none cursor-pointer accent-violet-600"
 						/>
 						<div className="flex justify-between text-xs text-gray-400">
-							<span>Без болю</span>
-							<span>Помірний</span>
-							<span>Найгірший</span>
+							<span>{s.noPain}</span>
+							<span>{s.moderate}</span>
+							<span>{s.worst}</span>
 						</div>
 					</div>
 
 					{/* Locations */}
 					<div className="space-y-2">
 						<p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-							Локалізації болю
+							{s.locations}
 						</p>
 						<div className="flex flex-wrap gap-2">
-							{PAIN_LOCATIONS.map(({ id, label }) => {
+							{PAIN_LOCATIONS.map(({ id }) => {
 								const active = data.locations.includes(id);
 								return (
 									<button
@@ -113,7 +119,7 @@ export function PainAssessmentBlock({ data, onChange }: Props) {
 												: 'bg-white border-gray-200 text-gray-600 hover:border-gray-300',
 										)}
 									>
-										{label}
+										{t.painLocations[id]}
 									</button>
 								);
 							})}
@@ -123,10 +129,10 @@ export function PainAssessmentBlock({ data, onChange }: Props) {
 					{/* Pain types */}
 					<div className="space-y-2">
 						<p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-							Тип болю
+							{s.types}
 						</p>
 						<div className="flex flex-wrap gap-2">
-							{PAIN_TYPES.map(({ id, label }) => {
+							{PAIN_TYPES.map(({ id }) => {
 								const active = data.types.includes(id);
 								return (
 									<button
@@ -140,7 +146,7 @@ export function PainAssessmentBlock({ data, onChange }: Props) {
 												: 'bg-white border-gray-200 text-gray-600 hover:border-gray-300',
 										)}
 									>
-										{label}
+										{t.painTypes[id]}
 									</button>
 								);
 							})}

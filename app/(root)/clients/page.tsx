@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Search, X } from 'lucide-react';
 import { Title } from '@/components/shared/title';
+import { useLocale } from '@/lib/i18n';
 
 function getInitials(firstName: string, lastName: string) {
 	return `${firstName?.[0] ?? ''}${lastName?.[0] ?? ''}`.toUpperCase();
@@ -19,6 +20,7 @@ const statusColors: Record<string, string> = {
 };
 
 export default function ClientsPage() {
+	const { t, locale } = useLocale();
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const [clients, setClients] = useState<any[]>([]);
 	const [search, setSearch] = useState('');
@@ -34,7 +36,7 @@ export default function ClientsPage() {
 		main_problem: '',
 		onset: '',
 		started_at: '',
-		status: 'Активний',
+		status: 'Active',
 	});
 
 	const fetchClients = async () => {
@@ -91,7 +93,7 @@ export default function ClientsPage() {
 				main_problem: '',
 				onset: '',
 				started_at: '',
-				status: 'Активний',
+				status: 'Active',
 			});
 			closePanel();
 			fetchClients();
@@ -99,21 +101,24 @@ export default function ClientsPage() {
 		setLoading(false);
 	}
 
+	const f = t.clients.form;
+	const dateLocale = locale === 'uk' ? 'uk-UA' : 'en-US';
+
 	return (
 		<div>
 			{/* Header */}
 			<div className="flex items-center justify-between mb-1">
 				<div>
-					<Title text="Клієнти" className="font-semibold" size="xl" />
+					<Title text={t.clients.title} className="font-semibold" size="xl" />
 					<p className="text-sm text-muted-foreground mt-1">
-						Керуйте всіма своїми клієнтами в одному місці
+						{t.clients.subtitle}
 					</p>
 				</div>
 				<Button
 					onClick={openPanel}
 					className="bg-violet-600 hover:bg-violet-700 text-white"
 				>
-					+ Новий клієнт
+					{t.clients.newClient}
 				</Button>
 			</div>
 
@@ -121,7 +126,7 @@ export default function ClientsPage() {
 			<div className="relative my-4">
 				<Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
 				<Input
-					placeholder="Пошук клієнтів..."
+					placeholder={t.clients.searchPlaceholder}
 					value={search}
 					onChange={e => setSearch(e.target.value)}
 					className="pl-9"
@@ -133,7 +138,7 @@ export default function ClientsPage() {
 				{filtered.map(c => (
 					<Link key={c.id} href={`/clients/${c.id}`}>
 						<div className="flex items-center gap-4 px-4 py-3 border rounded-xl hover:bg-gray-50 transition-colors cursor-pointer">
-							<div className="w-10 h-10 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center font-semibold text-sm flex-shrink-0">
+							<div className="w-10 h-10 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center font-semibold text-sm shrink-0">
 								{getInitials(c.first_name, c.last_name)}
 							</div>
 							<div className="flex-1 min-w-0">
@@ -145,10 +150,10 @@ export default function ClientsPage() {
 								</p>
 							</div>
 							<div className="text-xs text-muted-foreground text-right hidden sm:block">
-								<p className="text-gray-400">Started</p>
+								<p className="text-gray-400">{t.clients.startedAt}</p>
 								<p>
 									{c.started_at
-										? new Date(c.started_at).toLocaleDateString('en-US', {
+										? new Date(c.started_at).toLocaleDateString(dateLocale, {
 												month: 'short',
 												day: 'numeric',
 												year: 'numeric',
@@ -159,7 +164,7 @@ export default function ClientsPage() {
 							<span
 								className={`text-xs font-medium px-3 py-1 rounded-full ${statusColors[c.status] ?? statusColors.Active}`}
 							>
-								{c.status}
+								{t.clients.status[c.status] ?? c.status}
 							</span>
 							<span className="text-gray-300">›</span>
 						</div>
@@ -186,90 +191,90 @@ export default function ClientsPage() {
 							>
 								<X className="w-5 h-5" />
 							</button>
-							<h2 className="font-semibold text-base">Додати нового клієнта</h2>
+							<h2 className="font-semibold text-base">{f.title}</h2>
 						</div>
 
 						<div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
 							{/* Basic info */}
 							<div>
 								<p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-									Basic information
+									{f.basicInfo}
 								</p>
 								<div className="grid grid-cols-2 gap-3">
 									<div>
 										<label className="text-xs text-muted-foreground mb-1 block">
-											First name
+											{f.firstName}
 										</label>
 										<Input
-											placeholder="Enter first name"
+											placeholder={f.firstNamePlaceholder}
 											value={form.first_name}
 											onChange={e =>
-												setForm(f => ({ ...f, first_name: e.target.value }))
+												setForm(p => ({ ...p, first_name: e.target.value }))
 											}
 										/>
 									</div>
 									<div>
 										<label className="text-xs text-muted-foreground mb-1 block">
-											Прізвище
+											{f.lastName}
 										</label>
 										<Input
-											placeholder="Enter last name"
+											placeholder={f.lastNamePlaceholder}
 											value={form.last_name}
 											onChange={e =>
-												setForm(f => ({ ...f, last_name: e.target.value }))
+												setForm(p => ({ ...p, last_name: e.target.value }))
 											}
 										/>
 									</div>
 									<div>
 										<label className="text-xs text-muted-foreground mb-1 block">
-											Email (optional)
+											{f.email}
 										</label>
 										<Input
-											placeholder="Enter email"
+											placeholder={f.emailPlaceholder}
 											value={form.email}
 											onChange={e =>
-												setForm(f => ({ ...f, email: e.target.value }))
+												setForm(p => ({ ...p, email: e.target.value }))
 											}
 										/>
 									</div>
 									<div>
 										<label className="text-xs text-muted-foreground mb-1 block">
-											Вік
+											{f.age}
 										</label>
 										<Input
-											placeholder="Age"
+											placeholder={f.agePlaceholder}
 											type="number"
 											value={form.age}
 											onChange={e =>
-												setForm(f => ({ ...f, age: e.target.value }))
+												setForm(p => ({ ...p, age: e.target.value }))
 											}
 										/>
 									</div>
 									<div>
 										<label className="text-xs text-muted-foreground mb-1 block">
-											Стать
+											{f.gender}
 										</label>
 										<select
 											className="w-full border rounded-md px-3 py-2 text-sm bg-white"
 											value={form.gender}
 											onChange={e =>
-												setForm(f => ({ ...f, gender: e.target.value }))
+												setForm(p => ({ ...p, gender: e.target.value }))
 											}
 										>
-											<option value="">Оберіть стать</option>
-											<option value="Чоловік">Чоловік</option>
-											<option value="Жінка">Жінка</option>
+											<option value="">{f.genderDefault}</option>
+											<option value={f.genderMale}>{f.genderMale}</option>
+											<option value={f.genderFemale}>{f.genderFemale}</option>
 										</select>
 									</div>
 									<div>
 										<label className="text-xs text-muted-foreground mb-1 block">
-											Стартує
+											{f.startedAt}
 										</label>
 										<Input
 											type="date"
 											value={form.started_at}
 											onChange={e =>
-												setForm(f => ({ ...f, started_at: e.target.value }))
+												setForm(p => ({ ...p, started_at: e.target.value }))
 											}
 										/>
 									</div>
@@ -279,32 +284,32 @@ export default function ClientsPage() {
 							{/* Main problem */}
 							<div>
 								<p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-									Основна проблема
+									{f.mainProblem}
 								</p>
 								<div className="space-y-3">
 									<div>
 										<label className="text-xs text-muted-foreground mb-1 block">
-											У чому головна проблема?
+											{f.mainProblemLabel}
 										</label>
 										<textarea
-											className="w-full border rounded-md px-3 py-2 text-sm resize-none min-h-[80px]"
-											placeholder="Describe the main problem"
+											className="w-full border rounded-md px-3 py-2 text-sm resize-none min-h-20"
+											placeholder={f.mainProblemPlaceholder}
 											value={form.main_problem}
 											onChange={e =>
-												setForm(f => ({ ...f, main_problem: e.target.value }))
+												setForm(p => ({ ...p, main_problem: e.target.value }))
 											}
 										/>
 									</div>
 									<div>
 										<label className="text-xs text-muted-foreground mb-1 block">
-											Коли це почалося?
+											{f.onsetLabel}
 										</label>
 										<textarea
-											className="w-full border rounded-md px-3 py-2 text-sm resize-none min-h-[80px]"
-											placeholder="How and when did it start?"
+											className="w-full border rounded-md px-3 py-2 text-sm resize-none min-h-20"
+											placeholder={f.onsetPlaceholder}
 											value={form.onset}
 											onChange={e =>
-												setForm(f => ({ ...f, onset: e.target.value }))
+												setForm(p => ({ ...p, onset: e.target.value }))
 											}
 										/>
 									</div>
@@ -319,7 +324,7 @@ export default function ClientsPage() {
 								onClick={createClient}
 								disabled={loading || !form.first_name.trim()}
 							>
-								{loading ? 'Creating...' : 'Create client'}
+								{loading ? f.creating : f.create}
 							</Button>
 						</div>
 					</div>

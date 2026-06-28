@@ -1,48 +1,49 @@
+// IDs only — labels come from i18n translations (lib/i18n)
 export const SYMPTOMS = [
-	{ id: 'headache', label: 'Головний біль' },
-	{ id: 'neck_pain', label: 'Біль у шиї' },
-	{ id: 'shoulder_pain', label: 'Біль у плечі' },
-	{ id: 'lower_back_pain', label: 'Біль у попереку' },
-	{ id: 'radiating_pain', label: 'Іррадіюючий біль' },
-	{ id: 'numbness_tingling', label: 'Оніміння / поколювання' },
-	{ id: 'reduced_mobility', label: 'Знижена рухливість' },
-	{ id: 'fatigue', label: 'Втома' },
+	{ id: 'headache' },
+	{ id: 'neck_pain' },
+	{ id: 'shoulder_pain' },
+	{ id: 'lower_back_pain' },
+	{ id: 'radiating_pain' },
+	{ id: 'numbness_tingling' },
+	{ id: 'reduced_mobility' },
+	{ id: 'fatigue' },
 ] as const;
 
 export const PAIN_TYPES = [
-	{ id: 'sharp', label: 'Гострий' },
-	{ id: 'dull', label: 'Тупий' },
-	{ id: 'burning', label: 'Пекучий' },
-	{ id: 'stabbing', label: 'Колючий' },
-	{ id: 'aching', label: 'Ниючий' },
+	{ id: 'sharp' },
+	{ id: 'dull' },
+	{ id: 'burning' },
+	{ id: 'stabbing' },
+	{ id: 'aching' },
 ] as const;
 
 export const PAIN_LOCATIONS = [
-	{ id: 'head', label: 'Голова' },
-	{ id: 'neck', label: 'Шия' },
-	{ id: 'left_shoulder', label: 'Ліве плече' },
-	{ id: 'right_shoulder', label: 'Праве плече' },
-	{ id: 'upper_back', label: 'Верхня частина спини' },
-	{ id: 'lower_back', label: 'Поперек' },
-	{ id: 'left_arm', label: 'Ліва рука' },
-	{ id: 'right_arm', label: 'Права рука' },
-	{ id: 'left_hip', label: 'Ліве стегно' },
-	{ id: 'right_hip', label: 'Праве стегно' },
-	{ id: 'left_leg', label: 'Ліва нога' },
-	{ id: 'right_leg', label: 'Права нога' },
-	{ id: 'left_knee', label: 'Ліве коліно' },
-	{ id: 'right_knee', label: 'Праве коліно' },
-	{ id: 'left_foot', label: 'Ліва стопа' },
-	{ id: 'right_foot', label: 'Права стопа' },
+	{ id: 'head' },
+	{ id: 'neck' },
+	{ id: 'left_shoulder' },
+	{ id: 'right_shoulder' },
+	{ id: 'upper_back' },
+	{ id: 'lower_back' },
+	{ id: 'left_arm' },
+	{ id: 'right_arm' },
+	{ id: 'left_hip' },
+	{ id: 'right_hip' },
+	{ id: 'left_leg' },
+	{ id: 'right_leg' },
+	{ id: 'left_knee' },
+	{ id: 'right_knee' },
+	{ id: 'left_foot' },
+	{ id: 'right_foot' },
 ] as const;
 
 export const FUNCTIONAL_LIMITATIONS = [
-	{ id: 'walking', label: 'Ходьба' },
-	{ id: 'bending', label: 'Нахили' },
-	{ id: 'lifting', label: 'Піднімання' },
-	{ id: 'sitting', label: 'Сидіння' },
-	{ id: 'sleeping', label: 'Сон' },
-	{ id: 'sport_activity', label: 'Спортивна активність' },
+	{ id: 'walking' },
+	{ id: 'bending' },
+	{ id: 'lifting' },
+	{ id: 'sitting' },
+	{ id: 'sleeping' },
+	{ id: 'sport_activity' },
 ] as const;
 
 export type SymptomId = (typeof SYMPTOMS)[number]['id'];
@@ -85,7 +86,14 @@ export const DEFAULT_PROTOCOL: AssessmentProtocol = {
 	},
 };
 
+// DB values — kept in Ukrainian to match stored data
 export type AssessmentStatus = 'чернетка' | 'виконано';
+
+// Centralized color map keyed by DB values
+export const ASSESSMENT_STATUS_COLORS: Record<AssessmentStatus, string> = {
+	чернетка: 'bg-yellow-100 text-yellow-700',
+	виконано: 'bg-green-100 text-green-700',
+};
 
 export interface PhysioAssessment {
 	id: string;

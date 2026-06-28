@@ -16,9 +16,11 @@ import {
 import { Users } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useLocale, LanguageSwitcher } from '@/lib/i18n';
 
 export default function AppSidebar() {
 	const pathname = usePathname();
+	const { t } = useLocale();
 
 	return (
 		<Sidebar className="bg-violet-600">
@@ -26,7 +28,7 @@ export default function AppSidebar() {
 
 			<SidebarContent>
 				<SidebarGroup>
-					<SidebarGroupLabel>Основна</SidebarGroupLabel>
+					<SidebarGroupLabel>{t.nav.main}</SidebarGroupLabel>
 
 					<SidebarGroupContent>
 						<SidebarMenu>
@@ -38,7 +40,7 @@ export default function AppSidebar() {
 								>
 									<Link href="/clients" className="flex items-center gap-2">
 										<Users size={18} />
-										Клієнти
+										{t.nav.clients}
 									</Link>
 								</SidebarMenuButton>
 							</SidebarMenuItem>
@@ -47,8 +49,9 @@ export default function AppSidebar() {
 				</SidebarGroup>
 			</SidebarContent>
 
-			<SidebarFooter className="p-3 text-xs text-muted-foreground">
-				v1.0.0
+			<SidebarFooter className="p-3 flex flex-row items-center justify-between">
+				<span className="text-xs text-muted-foreground">v1.0.0</span>
+				<LanguageSwitcher />
 			</SidebarFooter>
 		</Sidebar>
 	);
