@@ -1,28 +1,29 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/supabase/supabase';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Search, X } from 'lucide-react';
 import { Title } from '@/components/shared/title';
 import { useLocale } from '@/lib/i18n';
+import {
+	CLIENT_STATUS_COLORS,
+	createClient as createClientRecord,
+	listClients,
+	type Client,
+	type ClientStatus,
+} from '@/supabase/clients';
 
 function getInitials(firstName: string, lastName: string) {
 	return `${firstName?.[0] ?? ''}${lastName?.[0] ?? ''}`.toUpperCase();
 }
 
-const statusColors: Record<string, string> = {
-	Active: 'bg-green-100 text-green-700',
-	Paused: 'bg-yellow-100 text-yellow-700',
-	Completed: 'bg-gray-100 text-gray-500',
-};
+const statusColors = CLIENT_STATUS_COLORS;
 
 export default function ClientsPage() {
 	const { t, locale } = useLocale();
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const [clients, setClients] = useState<any[]>([]);
+	const [clients, setClients] = useState<Client[]>([]);
 	const [search, setSearch] = useState('');
 	const [open, setOpen] = useState(false);
 	const [visible, setVisible] = useState(false);
@@ -40,11 +41,11 @@ export default function ClientsPage() {
 	});
 
 	const fetchClients = async () => {
-		const { data } = await supabase
-			.from('clients')
-			.select('*')
-			.order('created_at', { ascending: false });
-		setClients(data || []);
+		try {
+			setClients(await listClients());
+		} catch {
+			setClients([]);
+		}
 	};
 
 	useEffect(() => {
@@ -71,19 +72,25 @@ export default function ClientsPage() {
 	async function createClient() {
 		if (!form.first_name.trim()) return;
 		setLoading(true);
-		const { error } = await supabase.from('clients').insert({
-			first_name: form.first_name,
-			last_name: form.last_name,
-			email: form.email,
-			age: form.age ? parseInt(form.age) : null,
-			gender: form.gender,
-			status: form.status,
-			main_problem: form.main_problem,
-			onset: form.onset,
-			started_at: form.started_at || new Date().toISOString().split('T')[0],
-		});
 
-		if (!error) {
+		let ok = true;
+		try {
+			await createClientRecord({
+				first_name: form.first_name,
+				last_name: form.last_name,
+				email: form.email || null,
+				age: form.age ? parseInt(form.age) : null,
+				gender: form.gender || null,
+				status: form.status as ClientStatus,
+				main_problem: form.main_problem || null,
+				onset: form.onset || null,
+				started_at: form.started_at || new Date().toISOString().split('T')[0],
+			});
+		} catch {
+			ok = false;
+		}
+
+		if (ok) {
 			setForm({
 				first_name: '',
 				last_name: '',

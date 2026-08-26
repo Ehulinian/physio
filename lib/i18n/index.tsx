@@ -21,6 +21,22 @@ const uk = {
 		saved: 'Збережено',
 		add: 'Додати',
 	},
+	auth: {
+		title: 'Вхід для фізіотерапевта',
+		subtitle: 'Увійдіть, щоб працювати з картками пацієнтів',
+		email: 'Пошта',
+		emailPlaceholder: 'you@example.com',
+		password: 'Пароль',
+		passwordPlaceholder: '••••••••',
+		submit: 'Увійти',
+		submitting: 'Вхід...',
+		// Deliberately identical whether the address exists or not — a distinct
+		// "no such user" message tells an attacker which emails are registered.
+		failed: 'Не вдалося увійти. Перевірте пошту та пароль.',
+		notClinician:
+			'Цей обліковий запис не має доступу до кабінету терапевта.',
+		signOut: 'Вийти',
+	},
 	clients: {
 		title: 'Клієнти',
 		subtitle: 'Керуйте всіма своїми клієнтами в одному місці',
@@ -33,6 +49,16 @@ const uk = {
 			overview: 'Загальний огляд',
 			assessments: 'Оцінки',
 			notes: 'Нотатки',
+			diary: 'Щоденник',
+		},
+		diary: {
+			emptyTitle: 'Пацієнт ще нічого не записав',
+			emptyBody:
+				'Записи зʼявляться, щойно пацієнт заповнить щоденник у мобільному застосунку.',
+			averageOver: 'середній біль за {n} останніх днів',
+			improving: 'Покращення',
+			worsening: 'Погіршення',
+			steady: 'Без змін',
 		},
 		status: {
 			Active: 'Активний',
@@ -187,6 +213,19 @@ const en: typeof uk = {
 		saved: 'Saved',
 		add: 'Add',
 	},
+	auth: {
+		title: 'Physiotherapist sign in',
+		subtitle: 'Sign in to work with patient records',
+		email: 'Email',
+		emailPlaceholder: 'you@example.com',
+		password: 'Password',
+		passwordPlaceholder: '••••••••',
+		submit: 'Sign in',
+		submitting: 'Signing in...',
+		failed: 'Could not sign in. Check your email and password.',
+		notClinician: 'This account does not have access to the clinician area.',
+		signOut: 'Sign out',
+	},
 	clients: {
 		title: 'Clients',
 		subtitle: 'Manage all your clients in one place',
@@ -199,6 +238,16 @@ const en: typeof uk = {
 			overview: 'Overview',
 			assessments: 'Assessments',
 			notes: 'Notes',
+			diary: 'Diary',
+		},
+		diary: {
+			emptyTitle: 'Nothing reported yet',
+			emptyBody:
+				'Entries appear here as soon as the patient fills in their diary in the mobile app.',
+			averageOver: 'average pain over the last {n} days',
+			improving: 'Improving',
+			worsening: 'Worsening',
+			steady: 'Steady',
 		},
 		status: {
 			Active: 'Active',

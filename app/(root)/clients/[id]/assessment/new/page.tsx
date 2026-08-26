@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useCallback, useEffect, useRef, useState } from 'react';
+import { use, useCallback, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, CheckCircle, Save } from 'lucide-react';
@@ -26,7 +26,6 @@ export default function NewAssessmentPage({
 	const { t } = useLocale();
 	const a = t.assessment;
 
-	const [assessmentId, setAssessmentId] = useState<string | null>(null);
 	const [protocol, setProtocol] =
 		useState<AssessmentProtocol>(DEFAULT_PROTOCOL);
 	const [saving, setSaving] = useState(false);
@@ -34,8 +33,32 @@ export default function NewAssessmentPage({
 	const [completing, setCompleting] = useState(false);
 	const autosaveTimer = useRef<ReturnType<typeof setTimeout>>(null);
 
-	useEffect(() => {
-		createAssessment(clientId).then(data => setAssessmentId(data.id));
+	// The row is created on the first save, not on page load.
+	//
+	// It used to be created in an effect when the page opened, which meant
+	// opening the form and changing your mind left an empty draft in the
+	// patient's record. In development it left two, because React deliberately
+	// runs effects twice to surface exactly this kind of non-idempotent setup.
+	//
+	// Refs rather than state: these are read inside async callbacks and must
+	// hold the current value, not the one captured at render time.
+	const assessmentId = useRef<string | null>(null);
+	const creating = useRef<Promise<string> | null>(null);
+
+	const ensureAssessment = useCallback(async () => {
+		if (assessmentId.current) return assessmentId.current;
+
+		// Autosave and a button press can land at the same moment. Caching the
+		// in-flight promise means both await the same insert instead of racing
+		// and creating two rows.
+		if (!creating.current) {
+			creating.current = createAssessment(clientId).then(data => {
+				assessmentId.current = data.id;
+				return data.id;
+			});
+		}
+
+		return creating.current;
 	}, [clientId]);
 
 	const persist = useCallback(
@@ -43,10 +66,10 @@ export default function NewAssessmentPage({
 			proto: AssessmentProtocol,
 			status: 'чернетка' | 'виконано' = 'чернетка',
 		) => {
-			if (!assessmentId) return;
-			await saveAssessment(assessmentId, proto, status);
+			const id = await ensureAssessment();
+			await saveAssessment(id, proto, status);
 		},
-		[assessmentId],
+		[ensureAssessment],
 	);
 
 	function updateProtocol(patch: Partial<AssessmentProtocol>) {
@@ -100,7 +123,7 @@ export default function NewAssessmentPage({
 						variant="outline"
 						size="sm"
 						onClick={handleSaveDraft}
-						disabled={saving || !assessmentId}
+						disabled={saving}
 					>
 						<Save className="w-4 h-4 mr-1.5" />
 						{saving ? t.common.saving : a.saveDraft}
@@ -108,7 +131,7 @@ export default function NewAssessmentPage({
 					<Button
 						size="sm"
 						onClick={handleComplete}
-						disabled={completing || !assessmentId}
+						disabled={completing}
 						className="bg-violet-600 hover:bg-violet-700 text-white"
 					>
 						<CheckCircle className="w-4 h-4 mr-1.5" />

@@ -17,8 +17,9 @@ import { Users } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLocale, LanguageSwitcher } from '@/lib/i18n';
+import { SignOutButton } from './sign-out-button';
 
-export default function AppSidebar() {
+export default function AppSidebar({ userName }: { userName?: string }) {
 	const pathname = usePathname();
 	const { t } = useLocale();
 
@@ -49,9 +50,20 @@ export default function AppSidebar() {
 				</SidebarGroup>
 			</SidebarContent>
 
-			<SidebarFooter className="p-3 flex flex-row items-center justify-between">
-				<span className="text-xs text-muted-foreground">v1.0.0</span>
-				<LanguageSwitcher />
+			<SidebarFooter className="p-3 gap-3">
+				{userName && (
+					<div className="flex items-center gap-2 px-1">
+						<div className="w-7 h-7 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-[11px] font-semibold shrink-0">
+							{userName.slice(0, 2).toUpperCase()}
+						</div>
+						<span className="text-xs truncate">{userName}</span>
+					</div>
+				)}
+
+				<div className="flex flex-row items-center justify-between">
+					<SignOutButton />
+					<LanguageSwitcher />
+				</div>
 			</SidebarFooter>
 		</Sidebar>
 	);

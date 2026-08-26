@@ -1,8 +1,17 @@
 'use client';
 
 import { use, useEffect, useState } from 'react';
-import { supabase } from '@/supabase/supabase';
 import { getAssessments } from '@/supabase/assessments';
+import {
+	addNote as addNoteRecord,
+	getClient,
+	listNotes,
+	CLIENT_STATUS_COLORS,
+	type Client,
+	type Note,
+} from '@/supabase/clients';
+import { listPainEntries, type PainEntry } from '@/supabase/pain-entries';
+import { PainDiary } from '@/components/client/PainDiary';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -16,11 +25,7 @@ function getInitials(firstName: string, lastName: string) {
 	return `${firstName?.[0] ?? ''}${lastName?.[0] ?? ''}`.toUpperCase();
 }
 
-const clientStatusColors: Record<string, string> = {
-	Active: 'bg-green-100 text-green-700',
-	Paused: 'bg-yellow-100 text-yellow-700',
-	Completed: 'bg-gray-100 text-gray-500',
-};
+const clientStatusColors = CLIENT_STATUS_COLORS;
 
 export default function ClientPage({
 	params,
@@ -31,45 +36,42 @@ export default function ClientPage({
 	const { t, locale } = useLocale();
 	const dateLocale = locale === 'uk' ? 'uk-UA' : 'en-US';
 
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const [client, setClient] = useState<any>(null);
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const [notes, setNotes] = useState<any[]>([]);
+	const [client, setClient] = useState<Client | null>(null);
+	const [notes, setNotes] = useState<Note[]>([]);
+	const [painEntries, setPainEntries] = useState<PainEntry[]>([]);
 	const [assessments, setAssessments] = useState<PhysioAssessment[]>([]);
 	const [text, setText] = useState('');
 
 	useEffect(() => {
 		if (!id) return;
 		const load = async () => {
-			const [{ data: clientData }, { data: notesData }] = await Promise.all([
-				supabase.from('clients').select('*').eq('id', id).single(),
-				supabase
-					.from('notes')
-					.select('*')
-					.eq('client_id', id)
-					.order('created_at', { ascending: false }),
-			]);
+			// All three are independent, so they go out together rather than in
+			// sequence — three round trips to Supabase, one wait.
+			const [clientData, notesData, assessmentData, diaryData] =
+				await Promise.all([
+					getClient(id),
+					listNotes(id),
+					getAssessments(id),
+					listPainEntries(id),
+				]);
 			setClient(clientData);
-			setNotes(notesData || []);
-			const aData = await getAssessments(id);
-			setAssessments(aData);
+			setNotes(notesData);
+			setAssessments(assessmentData);
+			setPainEntries(diaryData);
 		};
 		load();
 	}, [id]);
 
 	async function addNote() {
 		if (!text.trim()) return;
-		const { error } = await supabase
-			.from('notes')
-			.insert({ client_id: id, text });
-		if (!error) {
+		try {
+			const created = await addNoteRecord(id, text);
 			setText('');
-			const { data } = await supabase
-				.from('notes')
-				.select('*')
-				.eq('client_id', id)
-				.order('created_at', { ascending: false });
-			setNotes(data || []);
+			// The insert returns the new row, so prepend it instead of refetching
+			// the whole list. Newest first matches the query order.
+			setNotes(current => [created, ...current]);
+		} catch {
+			// Keep the text in the box so the note is not lost.
 		}
 	}
 
@@ -157,8 +159,21 @@ export default function ClientPage({
 							</span>
 						)}
 					</TabsTrigger>
+					<TabsTrigger value="diary">
+						{cl.tabs.diary}
+						{painEntries.length > 0 && (
+							<span className="ml-1.5 text-xs bg-violet-100 text-violet-700 rounded-full px-1.5 py-0.5 font-medium">
+								{painEntries.length}
+							</span>
+						)}
+					</TabsTrigger>
 					<TabsTrigger value="notes">{cl.tabs.notes}</TabsTrigger>
 				</TabsList>
+
+				{/* DIARY — written by the patient in the mobile app, read-only here */}
+				<TabsContent value="diary">
+					<PainDiary entries={painEntries} />
+				</TabsContent>
 
 				{/* OVERVIEW */}
 				<TabsContent value="overview">
