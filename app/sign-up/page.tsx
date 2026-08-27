@@ -44,6 +44,11 @@ export default function SignUpPage() {
 				// clients belong to a clinician: a false one gets an empty
 				// workspace and can see nothing.
 				data: { role: 'clinician', full_name: fullName.trim() },
+				// Send the confirmation link back to whichever host they signed
+				// up on. Without this Supabase uses the project's Site URL — one
+				// value shared with the patient app, so half the confirmations
+				// would land in the wrong product.
+				emailRedirectTo: `${window.location.origin}/clients`,
 			},
 		});
 
