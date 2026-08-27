@@ -2,7 +2,8 @@
 
 import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Users } from 'lucide-react';
+import Link from 'next/link';
+import { Activity } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -77,7 +78,7 @@ function SignInForm() {
 			<div className="w-full max-w-sm space-y-8">
 				<div className="text-center space-y-4">
 					<div className="mx-auto w-16 h-16 bg-violet-600 rounded-2xl flex items-center justify-center">
-						<Users className="w-8 h-8 text-white" />
+						<Activity className="w-8 h-8 text-white" strokeWidth={2.5} />
 					</div>
 					<div className="space-y-1">
 						<h1 className="text-2xl font-semibold tracking-tight">
@@ -134,6 +135,23 @@ function SignInForm() {
 						{loading ? t.auth.submitting : t.auth.submit}
 					</Button>
 				</form>
+
+				<div className="space-y-2 text-center">
+					<p className="text-sm text-muted-foreground">
+						<Link
+							href="/reset-password"
+							className="text-violet-600 hover:underline"
+						>
+							Забули пароль?
+						</Link>
+					</p>
+					<p className="text-sm text-muted-foreground">
+						{t.auth.noAccount}{' '}
+						<Link href="/sign-up" className="text-violet-600 hover:underline">
+							{t.auth.createOne}
+						</Link>
+					</p>
+				</div>
 			</div>
 		</div>
 	);

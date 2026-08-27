@@ -22,11 +22,16 @@ export interface Client {
 	onset: string | null;
 	/** ISO date. */
 	started_at: string | null;
+	/** The therapist this record belongs to. Enforced by RLS, not by the app. */
+	clinician_id: string;
 	created_at: string;
 }
 
-/** What the form collects. The database fills in id and created_at. */
-export type ClientDraft = Omit<Client, 'id' | 'created_at'>;
+/**
+ * What the form collects. The database fills in id and created_at;
+ * `createClient` fills in clinician_id from the session.
+ */
+export type ClientDraft = Omit<Client, 'id' | 'created_at' | 'clinician_id'>;
 
 export interface Note {
 	id: string;
@@ -63,14 +68,39 @@ export async function getClient(id: string): Promise<Client | null> {
 }
 
 export async function createClient(draft: ClientDraft): Promise<Client> {
+	// Filled in here rather than by the caller: the RLS policy on `clients`
+	// requires clinician_id = auth.uid(), so an insert without it is rejected
+	// by the database anyway. Doing it in one place means no screen can forget.
+	const {
+		data: { user },
+	} = await supabase.auth.getUser();
+
+	if (!user) throw new Error('Not signed in');
+
 	const { data, error } = await supabase
 		.from('clients')
-		.insert(draft)
+		.insert({ ...draft, clinician_id: user.id })
 		.select()
 		.single();
 
 	if (error) throw error;
 	return data;
+}
+
+/**
+ * Whether a patient account is attached to this record.
+ *
+ * A count, not the profile row: the therapist has no business reading the
+ * patient's account details, and the policy on `profiles` reflects that.
+ */
+export async function isClientLinked(clientId: string): Promise<boolean> {
+	const { count, error } = await supabase
+		.from('profiles')
+		.select('id', { count: 'exact', head: true })
+		.eq('client_id', clientId);
+
+	if (error) return false;
+	return (count ?? 0) > 0;
 }
 
 export async function listNotes(clientId: string): Promise<Note[]> {

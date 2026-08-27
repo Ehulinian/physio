@@ -564,6 +564,7 @@ const LABELS: Record<string, string> = Object.fromEntries(
  * would invent a precision nobody ever collected.
  */
 const LEGACY_LABELS: Record<string, string> = {
+	// The original sixteen text chips.
 	head: 'Голова',
 	neck: 'Шия',
 	left_shoulder: 'Ліве плече',
@@ -578,6 +579,18 @@ const LEGACY_LABELS: Record<string, string> = {
 	right_knee: 'Праве коліно',
 	left_foot: 'Ліва ступня',
 	right_foot: 'Права ступня',
+
+	// The hand-drawn map that briefly sat between the two. Its regions were
+	// slightly different — a mid-back band, separate scapulae, hips rather
+	// than groin — and entries written against it are still in the database.
+	// Two schema changes in one week is unusual; carrying both is not.
+	mid_back: 'Середина спини',
+	scapula_left: 'Ліва лопатка',
+	scapula_right: 'Права лопатка',
+	hip_left: 'Лівий таз',
+	hip_right: 'Правий таз',
+	knee_back_left: 'Ліве коліно ззаду',
+	knee_back_right: 'Праве коліно ззаду',
 };
 
 /** Never returns undefined — an unknown id renders as itself rather than blank. */

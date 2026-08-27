@@ -36,6 +36,20 @@ const uk = {
 		notClinician:
 			'Цей обліковий запис не має доступу до кабінету терапевта.',
 		signOut: 'Вийти',
+		signUpTitle: 'Створити кабінет',
+		signUpSubtitle: 'Для фізіотерапевтів і реабілітологів',
+		signUpSubmit: 'Створити кабінет',
+		signUpFailed:
+			'Не вдалося створити кабінет. Можливо, ця пошта вже зареєстрована.',
+		fullName: 'Імʼя та прізвище',
+		fullNamePlaceholder: 'Ім’я Прізвище',
+		passwordHint: 'Щонайменше 8 символів',
+		passwordTooShort: 'Пароль має містити щонайменше 8 символів.',
+		confirmEmail:
+			'Кабінет створено. Перевірте пошту й підтвердьте адресу, щоб увійти.',
+		haveAccount: 'Вже маєте кабінет?',
+		noAccount: 'Ще немає кабінету?',
+		createOne: 'Створити',
 	},
 	clients: {
 		title: 'Клієнти',
@@ -55,7 +69,7 @@ const uk = {
 			emptyTitle: 'Пацієнт ще нічого не записав',
 			emptyBody:
 				'Записи зʼявляться, щойно пацієнт заповнить щоденник у мобільному застосунку.',
-			averageOver: 'середній біль за {n} останніх днів',
+			averageOver: 'середній біль за {period}',
 			improving: 'Покращення',
 			worsening: 'Погіршення',
 			steady: 'Без змін',
@@ -225,6 +239,18 @@ const en: typeof uk = {
 		failed: 'Could not sign in. Check your email and password.',
 		notClinician: 'This account does not have access to the clinician area.',
 		signOut: 'Sign out',
+		signUpTitle: 'Create a practice',
+		signUpSubtitle: 'For physiotherapists and rehab specialists',
+		signUpSubmit: 'Create practice',
+		signUpFailed: 'Could not create the account. That email may already be in use.',
+		fullName: 'Full name',
+		fullNamePlaceholder: 'First Last',
+		passwordHint: 'At least 8 characters',
+		passwordTooShort: 'Password must be at least 8 characters.',
+		confirmEmail: 'Account created. Check your email to confirm the address.',
+		haveAccount: 'Already have an account?',
+		noAccount: 'No account yet?',
+		createOne: 'Create one',
 	},
 	clients: {
 		title: 'Clients',
@@ -244,7 +270,7 @@ const en: typeof uk = {
 			emptyTitle: 'Nothing reported yet',
 			emptyBody:
 				'Entries appear here as soon as the patient fills in their diary in the mobile app.',
-			averageOver: 'average pain over the last {n} days',
+			averageOver: 'average pain over {period}',
 			improving: 'Improving',
 			worsening: 'Worsening',
 			steady: 'Steady',

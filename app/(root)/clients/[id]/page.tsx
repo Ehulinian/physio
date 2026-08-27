@@ -5,11 +5,14 @@ import { getAssessments } from '@/supabase/assessments';
 import {
 	addNote as addNoteRecord,
 	getClient,
+	isClientLinked,
 	listNotes,
 	CLIENT_STATUS_COLORS,
 	type Client,
 	type Note,
 } from '@/supabase/clients';
+import { InviteCard } from '@/components/client/InviteCard';
+import { GoalsTab } from '@/components/client/GoalsTab';
 import { listPainEntries, type PainEntry } from '@/supabase/pain-entries';
 import { PainDiary } from '@/components/client/PainDiary';
 import { Input } from '@/components/ui/input';
@@ -39,6 +42,7 @@ export default function ClientPage({
 	const [client, setClient] = useState<Client | null>(null);
 	const [notes, setNotes] = useState<Note[]>([]);
 	const [painEntries, setPainEntries] = useState<PainEntry[]>([]);
+	const [linked, setLinked] = useState(false);
 	const [assessments, setAssessments] = useState<PhysioAssessment[]>([]);
 	const [text, setText] = useState('');
 
@@ -47,17 +51,19 @@ export default function ClientPage({
 		const load = async () => {
 			// All three are independent, so they go out together rather than in
 			// sequence — three round trips to Supabase, one wait.
-			const [clientData, notesData, assessmentData, diaryData] =
+			const [clientData, notesData, assessmentData, diaryData, linkedData] =
 				await Promise.all([
 					getClient(id),
 					listNotes(id),
 					getAssessments(id),
 					listPainEntries(id),
+					isClientLinked(id),
 				]);
 			setClient(clientData);
 			setNotes(notesData);
 			setAssessments(assessmentData);
 			setPainEntries(diaryData);
+			setLinked(linkedData);
 		};
 		load();
 	}, [id]);
@@ -167,8 +173,13 @@ export default function ClientPage({
 							</span>
 						)}
 					</TabsTrigger>
+					<TabsTrigger value="goals">Цілі</TabsTrigger>
 					<TabsTrigger value="notes">{cl.tabs.notes}</TabsTrigger>
 				</TabsList>
+
+				<TabsContent value="goals">
+					<GoalsTab clientId={id} />
+				</TabsContent>
 
 				{/* DIARY — written by the patient in the mobile app, read-only here */}
 				<TabsContent value="diary">
@@ -177,6 +188,14 @@ export default function ClientPage({
 
 				{/* OVERVIEW */}
 				<TabsContent value="overview">
+					<div className="mt-4">
+						<InviteCard
+							clientId={id}
+							linked={linked}
+							clientName={client.first_name}
+						/>
+					</div>
+
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
 						{/* Problem / Symptoms */}
 						<div className="border rounded-xl p-4 space-y-3">

@@ -22,7 +22,16 @@ import { NextResponse, type NextRequest } from 'next/server';
  * requests honest and gives the user a sensible redirect.
  */
 
-const PUBLIC_ROUTES = ['/sign-in', '/auth'];
+// `/reset-password` must stay public even though the user arrives with a
+// recovery session: bouncing them to /clients would skip the whole point.
+// `/privacy` has to be readable before anyone decides to register at all.
+const PUBLIC_ROUTES = [
+	'/sign-in',
+	'/sign-up',
+	'/reset-password',
+	'/privacy',
+	'/auth',
+];
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -67,7 +76,10 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (user && pathname.startsWith('/sign-in')) {
+  if (
+    user &&
+    (pathname.startsWith('/sign-in') || pathname.startsWith('/sign-up'))
+  ) {
     const url = request.nextUrl.clone();
     url.pathname = '/clients';
     url.search = '';

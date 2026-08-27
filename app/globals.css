@@ -73,14 +73,24 @@
 	--chart-4: oklch(0.371 0 0);
 	--chart-5: oklch(0.269 0 0);
 	--radius: 0.625rem;
-	--sidebar: oklch(0.16 0.025 260);
-	--sidebar-foreground: oklch(0.95 0.01 260);
-	--sidebar-primary: oklch(0.45 0.12 255);
-	--sidebar-primary-foreground: oklch(0.98 0.01 260);
-	--sidebar-accent: oklch(0.22 0.03 255);
-	--sidebar-accent-foreground: oklch(0.95 0.01 260);
-	--sidebar-border: oklch(0.25 0.02 260 / 0.6);
-	--sidebar-ring: oklch(0.45 0.12 255);
+	/* Sidebar.
+	 *
+	 * Was near-black with a blue tint, which read as a different product
+	 * bolted onto a white app — the dark navigation belongs to the dashboard
+	 * era, and next to violet accents the blue undertone clashed outright.
+	 *
+	 * Now a very light zinc panel, one step off white so the edge is legible
+	 * without a heavy border, with violet reserved for the active item. Same
+	 * hue as the buttons and the body map, so the whole app reads as one
+	 * thing. */
+	--sidebar: oklch(0.985 0.002 285);
+	--sidebar-foreground: oklch(0.32 0.006 285);
+	--sidebar-primary: oklch(0.55 0.22 295);
+	--sidebar-primary-foreground: oklch(0.99 0 0);
+	--sidebar-accent: oklch(0.955 0.015 300);
+	--sidebar-accent-foreground: oklch(0.47 0.2 295);
+	--sidebar-border: oklch(0.91 0.004 285);
+	--sidebar-ring: oklch(0.55 0.22 295);
 }
 
 .dark {
