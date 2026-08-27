@@ -65,6 +65,10 @@ export function InviteCard({
 	}, [load]);
 
 	const active = invites.find(i => inviteState(i) === 'active');
+
+	// The patient app serves /join/:code through a rewrite in its vercel.json.
+	// Kept as a path rather than ?code= because this is what someone sees in a
+	// message, and it should read like a place, not a form submission.
 	const joinUrl =
 		active && PATIENT_APP_URL ? `${PATIENT_APP_URL}/join/${active.code}` : null;
 
